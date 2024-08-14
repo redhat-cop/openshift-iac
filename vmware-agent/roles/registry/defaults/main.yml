@@ -1,0 +1,23 @@
+registry_cluster_name: "{{ openshift_install_cluster_name | mandatory }}"
+registry_binaries_dir: "{{ ansible_env.HOME }}/.{{ registry_cluster_name }}/bin"
+__registry_home: "{{ ansible_env.HOME }}/.{{ registry_cluster_name }}/.registry"
+registry_directory: "{{ openshift_install_registry_directory | d(__registry_home) }}"
+registry_username: "{{ openshift_install_registry_username | d('ansible') }}"
+registry_password: "{{ openshift_install_registry_password | d('ansible') }}"
+registry_port: "{{ openshift_install_registry_port | d('5000') }}"
+registry_pull_secret: "{{ openshift_install_pull_secret | mandatory }}"
+registry_product_repo: "{{ openshift_install_registry_repo | d('openshift-release-dev') }}"
+registry_repo: "{{ openshift_install_registry_repo | d('ocp4/openshift4') }}"
+registry_host: "{{ openshift_install_registry_host | d(ansible_hostname) }}"
+registry_release: "{{ openshift_install_registry_release | d('ocp-release') }}"
+registry_ocp_release: "{{ openshift_install_ocp_release | d('4.14.3-multi-x86_64') }}"
+registry_email: "{{ openshift_install_registry_email | d('') }}"
+
+# Cert mgmt
+registry_certificate_type: "{{ openshift_install_certificate_mgmt | d('vault') }}"
+registry_certificate_ttl: "{{ openshift_install_certificate_ttl | d('1825d') }}"
+
+# For vault certificate mgmt
+registry_vault_role_name: "{{ openshift_install_vault_role_name | d('') }}"
+registry_vault_url: "{{ openshift_install_vault_url | d('') }}"
+registry_vault_token: "{{ openshift_install_vault_token | d('') }}"

@@ -1,0 +1,2 @@
+- name: Run the load balancer role
+  ansible.builtin.include_tasks: "{{ load_balancer_state }}.yml"

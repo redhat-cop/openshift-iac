@@ -1,0 +1,63 @@
+configure_type: "{{ openshift_install_type | d('vmware') }}"
+
+configure_vm_state: "{{ openshift_install_vm_state | d('present') }}"
+# Nodes
+configure_nodes: "{{ openshift_install_nodes | mandatory }}"
+
+# VMWare spec
+configure_hardware_version: "{{ vpshere_upi_hardware_version | d('VMX_17') }}"
+configure_datacenter: "{{ openshift_install_vcenter_datacenter | mandatory }}"
+configure_cluster: "{{ openshift_install_vcenter_cluster | mandatory }}"
+configure_datastore: "{{ openshift_install_vcenter_datastore | mandatory }}"
+configure_network_name: "{{ openshift_install_vcenter_network | mandatory }}"
+configure_folder: "{{ openshift_install_vcenter_folder | mandatory }}"
+configure_vsphere: "{{ openshift_install_vsphere | mandatory }}"
+
+# Resources spec
+configure_master_mib: "{{ openshift_install_master_mib | d(32768) }}"
+configure_worker_mib: "{{ openshift_install_worker_mib | d(32768) }}"
+configure_worker_cpu_count: "{{ openshift_install_worker_cpu_count | d(6) }}"
+configure_worker_cpu_cps: "{{ openshift_install_worker_cpu_cps | d(2) }}"
+configure_master_cpu_count: "{{ openshift_install_master_cpu_count | d(6) }}"
+configure_master_cpu_cps: "{{ openshift_install_master_cpu_cps | d(2) }}"
+
+# Networking
+configure_interface_name: "{{ openshift_install_interface_name | d('ens160') }}"
+configure_default_route: "{{ openshift_install_default_route | d('') }}"
+configure_dns_servers: "{{ openshift_install_dns_servers | d([]) }}"
+
+# Openshift spec
+configure_network_type: "{{ openshift_install_network_type | d('OpenShiftSDN') }}"
+configure_network: "{{ openshift_install_network | mandatory }}"
+configure_base_domain: "{{ openshift_install_base_domain | mandatory }}"
+configure_cluster_name: "{{ openshift_install_cluster_name | mandatory }}"
+configure_ssh_key: "{{ openshift_install_ssh_key | d('') }}"
+configure_pull_secret: "{{ openshift_install_pull_secret | mandatory | safe | from_json  }}"
+configure_fips: "{{ openshift_install_fips | d(false) }}"
+
+# Binaries
+configure_binaries_dir: "{{ ansible_env.HOME }}/.{{ configure_cluster_name }}/bin"
+configure_install_binary: "{{ openshift_install_binary | d(configure_binaries_dir + '/openshift-install') }}"
+
+# DHCP
+configure_dhcp: "{{ openshift_install_dhcp | d('false') | bool }}"
+configure_dhcp_reservation: "{{ openshift_install_dhcp_reservation | d('true') | bool }}"
+configure_dns_provider: "{{ openshift_install_dns | mandatory}}"
+
+#
+configure_cluster_home_dir_def: "{{ ansible_env.HOME }}/.{{ openshift_install_cluster_name }}"
+configure_cluster_home_dir: "{{ openshift_install_cluster_home_dir | d(configure_cluster_home_dir_def) }}"
+
+# Registry
+configure_registry: "{{ openshift_install_registry | d(false) }}"
+__configure_registry_home: "{{ ansible_env.HOME }}/.{{ configure_cluster_name }}/.registry"
+configure_registry_directory: "{{ openshift_install_registry_directory | d(__configure_registry_home) }}"
+configure_registry_cert: "{{ openshift_install_ca_crt | d('') }}"
+configure_registry_username: "{{ openshift_install_registry_username | d('ansible') }}"
+configure_registry_password: "{{ openshift_install_registry_password | d('ansible') }}"
+configure_registry_email: "{{ openshift_install_registry_email | d('') }}"
+configure_registry_port: "{{ openshift_install_registry_port | d('5000') }}"
+configure_registry_host: "{{ openshift_install_registry_host | d(ansible_hostname) }}"
+
+# Wait for install to finish
+configure_wait_for_install: "{{ openshift_install_wait_for_install | d(true) }}"

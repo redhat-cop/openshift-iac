@@ -1,0 +1,9 @@
+collections:
+  - infoblox.nios_modules
+  - f5networks.f5_modules
+  - vmware.vmware_rest
+  - community.vmware
+  - community.hashi_vault
+  - community.general
+  - containers.podman
+  - kubernetes.core

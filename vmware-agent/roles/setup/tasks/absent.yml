@@ -1,0 +1,9 @@
+- name: Clean up directory
+      ansible.builtin.file:
+        path: "{{ ansible_env.HOME }}/.{{ openshift_install_cluster_name }}"
+        state: absent
+
+    - name: Remove mirror-registry Podman containers
+      containers.podman.podman_container:
+        name: "mirror-registry"
+        state: absent

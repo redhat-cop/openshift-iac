@@ -1,0 +1,43 @@
+---
+argument_specs:
+  # roles/setup/tasks/main.yml entry point
+  main:
+    short_description: The main entry point for the setup role.
+    options:
+      openshift_install_ssh_key:
+        type: "str"
+        required: false
+        description: "Public SSH key which should be deployed on Openshift nodes. If not defined, role will generate one in `~/{{ setup_cluster_name }}_id_rsa` file and load public key to `openshift_install_ssh_key` variable."
+
+      setup_cluster_name:
+        type: "str"
+        required: true
+        description: "Name of the cluster. If not defined, role will use `openshift_install_cluster_name` variable."
+
+  # roles/setup/tasks/ssh.yml entry point
+  ssh:
+    short_description: The ssh entry point for the setup role.
+    options:
+      setup_cluster_name:
+        type: "str"
+        required: true
+        description: "Name of the cluster. If not defined, role will use `openshift_install_cluster_name` variable."
+
+  # roles/setup/tasks/binaries.yml entry point
+  binaries:
+    short_description: The binaries entry point for the setup role.
+    options:
+      setup_cluster_version:
+        type: "str"
+        required: false
+        description: "Version of the cluster to be installed. Openshift client tools with this version will be downloaded and setup."
+
+      setup_install_registry:
+        type: "str"
+        required: false
+        description: "If custom registry is used, we don't download and setup `openshift-install` command as it must be extracted from the registry."
+
+      setup_binaries_dir:
+        type: "str"
+        required: false
+        description: "Directory where binaries are stored. Default is `{{ ansible_env.HOME }}/.{{ setup_cluster_name }}`."

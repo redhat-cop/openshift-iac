@@ -1,0 +1,20 @@
+# Common
+post_install_cluster_name: "{{ openshift_install_cluster_name | mandatory }}"
+post_install_base_domain: "{{ openshift_install_base_domain | mandatory }}"
+__post_install_home_dir_def: "{{ ansible_env.HOME }}/.{{ post_install_cluster_name }}"
+post_install_home_dir: "{{ openshift_install_cluster_home_dir | d(__post_install_home_dir_def) }}"
+
+# Cert mgmt
+post_install_custom_cert: "{{ openshift_install_custom_cert | d(false) }}"
+post_install_certificate_type: "{{ openshift_install_certificate_mgmt | d('vault') }}"
+post_install_certificate_ttl: "{{ openshift_install_certificate_ttl | d('1825d') }}"
+
+# Vault certificate mgmt
+post_install_vault_role_name: "{{ openshift_install_vault_role_name | d('') }}"
+post_install_vault_url: "{{ openshift_install_vault_url | d('') }}"
+post_install_vault_token: "{{ openshift_install_vault_token | d('') }}"
+
+# Git repo
+post_install_gitops_cluster_name: "${openshift_install_gitops_cluster_name | d('hub')}"
+post_install_gitops_repo: "{{ openshift_install_gitops_repo | d('') }}"
+post_install_gitops_repo_path: "{{ openshift_install_gitops_repo_path | d(__post_install_home_dir_def + '/gitops') }}"

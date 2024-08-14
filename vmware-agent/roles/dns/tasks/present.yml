@@ -1,0 +1,9 @@
+- name: Create | Include request IPs
+  ansible.builtin.include_tasks: request_ips.yml
+
+- name: Create | Include create records
+  ansible.builtin.include_tasks: create_records.yml
+
+- name: Create | Update openshift_install_nodes in case run as part of collection
+  ansible.builtin.set_fact:
+    openshift_install_nodes: "{{ dns_nodes }}"

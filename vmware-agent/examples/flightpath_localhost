@@ -1,0 +1,53 @@
+# This inventory will run on local machine and following will be configured:
+# Private registry 
+all:
+  hosts:
+    localhost:
+      ansible_connection: local
+  children:
+    localhost:
+      hosts:
+        localhost:
+      vars:
+        # Registry
+        openshift_install_registry: true
+        openshift_install_ocp_release: 4.15.0-ec.2-x86_64 
+        openshift_install_registry_host: fedora-jumpbox.flightpath.internal
+
+        # Basic vars
+        openshift_install_base_domain: flightpath.internal
+        openshift_install_cluster_name: omachace-agent-dhcp
+
+        # Vcenter infra vars
+        openshift_install_vcenter_datacenter: DC-Practice-Lab
+        openshift_install_vcenter_cluster: Practice-Lab-Cluster
+        openshift_install_vcenter_datastore: pool0-ceph-storage
+        openshift_install_vcenter_network: "vlan-314 - DPortGroup"
+        openshift_install_vcenter_folder: "/DC-Practice-Lab/vm/omachace"
+
+        # Virtual IP
+        openshift_install_api_vip: 10.1.192.238
+        openshift_install_ingress_vip: 10.1.192.239
+
+        # Hashi vault
+        openshift_install_vault_secret_dns: flightpath/data/dns
+        openshift_install_vault_secret_lb: flightpath/data/lb
+        openshift_install_vault_secret_vsphere: flightpath/data/vsphere
+        openshift_install_vault_url: https://10.1.196.198:8200/
+        # Token is stored in ansible vault
+        # openshift_install_vault_token: 
+
+        # Nodes spec
+        openshift_install_dns_servers:
+          - "10.1.196.199"
+        openshift_install_default_route: "10.1.198.238"
+        openshift_install_network: "10.1.198.224/28"
+        openshift_install_dhcp: true
+        openshift_install_nodes:
+          - {name: 'vm0'} 
+          - {name: 'vm1'}
+          - {name: 'vm2'}
+
+        # Openshift values:
+        openshift_install_dns_primary_grid: "infoblox-1.localdomain"
+        openshift_install_ssh_key: "ssh-rsa AAA.."

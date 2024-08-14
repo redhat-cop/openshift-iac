@@ -1,0 +1,2 @@
+- name: Run setup tasks
+  ansible.builtin.import_tasks: "{{ setup_state }}.yml"

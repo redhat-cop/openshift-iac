@@ -1,0 +1,5 @@
+- name: Deploy Openshift on baremetal
+  hosts: "{{ openshift_install_target_host | d('localhost') }}"
+  gather_facts: true
+  roles:
+    - role: baremetal

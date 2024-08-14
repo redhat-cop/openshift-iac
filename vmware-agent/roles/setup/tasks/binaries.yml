@@ -1,0 +1,60 @@
+- name: Binaries | Set product version
+  ansible.builtin.set_fact:
+    __product_release_version: "{{ setup_cluster_version | machacekondra.openshift_install.product_release_version }}"
+    __family: "{{ 'mac' if ansible_os_family == 'Darwin' else 'linux' }}"
+
+- name: Binaries| Set the download facts openshift binaries
+  ansible.builtin.set_fact:
+    __openshift_client: "{{ setup_clients_url }}/{{ __product_release_version }}/openshift-client-{{ __family }}.tar.gz"
+    __openshift_install: "{{ setup_clients_url }}/{{ __product_release_version }}/openshift-install-{{ __family }}.tar.gz"
+
+- name: Binaries | Clean up existing bin and downloads folders
+  ansible.builtin.file:
+    path: "{{ setup_binaries_dir }}/{{ item }}"
+    state: absent
+  with_items: ["bin", "downloads"]
+  when: setup_binaries_clean
+
+- name: Binaries | Create bin and downloads folders
+  ansible.builtin.file:
+    path: "{{ setup_binaries_dir }}/{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "bin"
+    - "downloads"
+
+- name: Binaries | Download the openshift_client binary
+  ansible.builtin.get_url:
+    mode: "0644"
+    url: "{{ __openshift_client }}"
+    dest: "{{ setup_binaries_dir }}/downloads/openshift_client.tar.gz"
+    validate_certs: false
+  register: __openshift_oc_download
+
+- name: Binaries | Unarchive openshift_client
+  ansible.builtin.unarchive:
+    remote_src: true
+    src: "{{ setup_binaries_dir }}/downloads/openshift_client.tar.gz"
+    dest: "{{ setup_binaries_dir }}/bin"
+    mode: '0775'
+  when: __openshift_oc_download is changed
+
+- name: Binaries | Download the openshift-install binary
+  ansible.builtin.get_url:
+    mode: "0644"
+    url: "{{ __openshift_install }}"
+    dest: "{{ setup_binaries_dir }}/downloads/openshift_install.tar.gz"
+    validate_certs: false
+  register: __openshift_install_download
+  when: not setup_install_registry
+
+- name: Binaries | Unarchive openshift-install
+  ansible.builtin.unarchive:
+    remote_src: true
+    src: "{{ setup_binaries_dir }}/downloads/openshift_install.tar.gz"
+    dest: "{{ setup_binaries_dir }}/bin"
+    mode: '0775'
+    exclude:
+      - README.md
+  when: __openshift_install_download is changed

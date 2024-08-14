@@ -1,0 +1,7 @@
+- name: Custom certificate
+  ansible.builtin.import_tasks: custom_certificate.yml
+  when: post_install_custom_cert
+
+- name: GitOps
+  ansible.builtin.import_tasks: gitops.yml
+  when: post_install_gitops_repo != ''

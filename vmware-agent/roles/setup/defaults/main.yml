@@ -1,0 +1,12 @@
+setup_state: "{{ openshift_install_state | d('present') }}"
+# Name of the cluster. Used for the folder, which store temporary stuff for installation.
+setup_cluster_name: "{{ openshift_install_cluster_name | mandatory }}"
+# URL that contains openshift client tools
+setup_clients_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp"
+# Directory where binaries are stored for Openshift installation
+__setup_binaries_dir: "{{ ansible_env.HOME }}/.{{ setup_cluster_name }}"
+setup_binaries_dir: "{{ openshift_install_binary_dir | d(__setup_binaries_dir) }}"
+# If true the binariest
+setup_binaries_clean: false
+setup_cluster_version: "{{ openshift_install_cluster_version | d('latest') }}"
+setup_install_registry: "{{ openshift_install_registry | d(false) }}"

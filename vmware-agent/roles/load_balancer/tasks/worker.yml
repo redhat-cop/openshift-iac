@@ -1,0 +1,28 @@
+- name: worker | Create backend-openshift-router
+  f5networks.f5_modules.bigip_pool:
+    state: "{{ load_balancer_state }}"
+    name: "{{ load_balancer_cluster_name }}-backend-openshift-router"
+    monitors:
+      - tcp
+    provider: "{{ load_balancer_provider }}"
+
+- name: worker | Add pool member to backend-openshift-router
+  f5networks.f5_modules.bigip_pool_member:
+    state: "{{ load_balancer_state }}"
+    pool: "{{ load_balancer_cluster_name }}-backend-openshift-router"
+    name: "{{ item.name }}-{{ load_balancer_cluster_name }}"
+    host: "{{ item.ipaddr }}"
+    port: 443
+    provider: "{{ load_balancer_provider }}"
+  loop: "{{ load_balancer_nodes | selectattr('role', 'equalto', 'worker') }}"
+  # FIXME: if empty use masters
+
+- name: worker | Add virtual server for worker
+  f5networks.f5_modules.bigip_virtual_server:
+    state: "{{ load_balancer_state }}"
+    name: "{{ load_balancer_cluster_name }}-frontend-openshift-router"
+    destination: "{{ load_balancer_ingress_vip }}"
+    port: 443
+    pool: "{{ load_balancer_cluster_name }}-backend-openshift-router"
+    snat: Automap
+    provider: "{{ load_balancer_provider }}"

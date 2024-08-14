@@ -1,0 +1,31 @@
+apiVersion: v1
+baseDomain: {{ configure_base_domain }}
+featureSet: TechPreviewNoUpgrade
+compute:
+- architecture: amd64
+  hyperthreading: Enabled
+  name: worker
+  replicas: {{ __worker_nodes_len }}
+controlPlane:
+  architecture: amd64
+  hyperthreading: Enabled
+  name: master
+  replicas: {{ __master_nodes_len }}
+metadata:
+  name: {{ configure_cluster_name }}
+networking:
+  networkType: {{ configure_network_type }}
+  machineNetwork:
+    - cidr: 10.1.192.0/22
+platform:
+  vsphere:
+    vcenter: {{ configure_vsphere.vcenter_hostname }}
+    username: {{ configure_vsphere.vcenter_username }}
+    password: {{ configure_vsphere.vcenter_password }}
+    datacenter: {{ configure_datacenter }}
+    defaultDatastore: {{ configure_datastore }}
+    folder: {{ configure_folder }}
+    loadBalancer:
+      type: UserManaged
+pullSecret: '{{ configure_pull_secret }}'
+sshKey: '{{ configure_ssh_key }}'

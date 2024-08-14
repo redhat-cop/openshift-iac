@@ -1,0 +1,56 @@
+apiVersion: v1beta1
+kind: AgentConfig
+metadata:
+  name: {{ baremetal_cluster_name }}
+rendezvousIP: {{ openshift_install_nodes[0].ipaddr }}
+hosts:
+{% for node in openshift_install_nodes %}
+  - hostname: {{ node.name }}
+    role: {{ node.role | default('master') }}
+    bmc:
+      address: redfish+https://{{ node.bmc_address }}/redfish/v1/Systems/
+      username: {{ node.bmc_username }}
+      password: {{ node.bmc_password | default(baremetal_bmc_password) }}
+      disableCertificateVerification: true
+{% if baremetal_root_device_hints != "" %}
+    rootDeviceHints:
+      deviceName: {{ baremetal_root_device_hints }}
+{% endif %}
+    interfaces:
+      - name: {{ baremetal_interface_name }}
+        macAddress: {{ node.macaddr }}
+    networkConfig:
+      interfaces:
+        - name: {{ baremetal_interface_name }}
+          type: ethernet
+          state: up
+          ipv4:
+            enabled: true
+{% if baremetal_dns_servers | length > 0 %}
+            auto-dns: false
+{% endif %}
+{% if not baremetal_dhcp %}
+            address:
+              - ip: {{ node.ipaddr }}
+                prefix-length: {{ __network_prefix | default(24) }}
+            dhcp: false
+{% else %}
+            dhcp: true
+{% endif %}
+{% if baremetal_dns_servers is defined and baremetal_dns_servers | length > 0 %}
+      dns-resolver:
+        config:
+          server:
+{% for dns in baremetal_dns_servers %}
+            - {{ dns }}
+{% endfor %}
+{% endif %}
+{% if baremetal_default_route is defined and baremetal_default_route != "" %}
+      routes:
+        config:
+          - destination: 0.0.0.0/0
+            next-hop-address: {{ baremetal_default_route }}
+            next-hop-interface: {{ baremetal_interface_name }}
+            table-id: 254
+{% endif %}
+{% endfor %}

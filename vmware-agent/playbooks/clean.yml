@@ -1,0 +1,30 @@
+- name: Remove the Openshift and clean environment
+  hosts: "{{ openshift_install_target_host | d('localhost') }}"
+  gather_facts: true
+
+  roles:
+    - role: load_balancer
+      tags:
+        - load_balancer
+        - infra
+      vars:
+        load_balancer_state: "absent"
+
+    - role: dns
+      tags:
+        - dns
+        - infra
+      vars:
+        dns_state: "absent"
+
+    - role: configure
+      tags:
+        - install
+      vars:
+        configure_vm_state: "absent"
+    
+    - role: setup
+      tags:
+        - setup
+      vars:
+        setup_state: "absent"

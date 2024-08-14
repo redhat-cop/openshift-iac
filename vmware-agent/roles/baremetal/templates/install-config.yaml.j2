@@ -1,0 +1,36 @@
+apiVersion: v1
+baseDomain: {{ baremetal_base_domain }}
+compute:
+- architecture: amd64
+  hyperthreading: Enabled
+  name: worker
+  replicas: {{ __worker_nodes_len }}
+controlPlane:
+  architecture: amd64
+  hyperthreading: Enabled
+  name: master
+  replicas: {{ __master_nodes_len }}
+metadata:
+  name: {{ baremetal_cluster_name }}
+fips: {{ baremetal_fips }}
+networking:
+  networkType: {{ baremetal_network_type }}
+  machineNetwork:
+    - cidr: {{ baremetal_network }}
+platform:
+  baremetal:
+    apiVIPs:
+      - {{ baremetal_api_vip }}
+    ingressVIPs:
+      - {{ baremetal_ingress_vip }}
+    hosts:
+{% for node in openshift_install_nodes %}
+        - name: {{ node.name }}
+          bmc:
+            username: {{ node.bmc_username }}
+            password: {{ node.bmc_password | default(baremetal_bmc_password) }}
+            address: redfish+https://{{ node.bmc_address }}:8000/redfish/v1/Systems/
+            disableCertificateVerification: true
+{% endfor %}
+pullSecret: '{{ baremetal_pull_secret | tojson | safe }}'
+sshKey: {{ baremetal_ssh_key }}

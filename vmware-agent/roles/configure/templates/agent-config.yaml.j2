@@ -1,0 +1,47 @@
+apiVersion: v1beta1
+kind: AgentConfig
+metadata:
+  name: {{ configure_cluster_name }}
+rendezvousIP: {{ openshift_install_nodes[0].ipaddr }}
+hosts:
+{% for node in openshift_install_nodes %}
+  - hostname: {{ node.name }}
+    role: {{ node.role | default('master') }}
+    interfaces:
+      - name: {{ configure_interface_name }}
+        macAddress: {{ node.macaddr }}
+    networkConfig:
+      interfaces:
+        - name: {{ configure_interface_name }}
+          type: ethernet
+          state: up
+          ipv4:
+            enabled: true
+{% if configure_dns_servers | length > 0 %}
+            auto-dns: false
+{% endif %}
+{% if not configure_dhcp %}
+            address:
+              - ip: {{ node.ipaddr }}
+                prefix-length: {{ __network_prefix | default(24) }}
+            dhcp: false
+{% else %}
+            dhcp: true
+{% endif %}
+{% if configure_dns_servers | length > 0 %}
+      dns-resolver:
+        config:
+          server:
+{% for dns in configure_dns_servers %}
+            - {{ dns }}
+{% endfor %}
+{% endif %}
+{% if configure_default_route is defined and configure_default_route != "" %}
+      routes:
+        config:
+          - destination: 0.0.0.0/0
+            next-hop-address: {{ configure_default_route }}
+            next-hop-interface: {{ configure_interface_name }}
+            table-id: 254
+{% endif %}
+{% endfor %}

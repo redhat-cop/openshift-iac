@@ -1,0 +1,2 @@
+- name: Run configuration
+  ansible.builtin.import_tasks: "{{ configure_vm_state }}.yml"

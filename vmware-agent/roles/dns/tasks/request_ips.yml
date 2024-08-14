@@ -1,0 +1,13 @@
+- name: Fetch VMs IP addresses
+  ansible.builtin.set_fact:
+    dns_nodes: "{{ dns_nodes | machacekondra.openshift_install.fetch_ips(dns_cluster_name, dns_base_domain, provider=dns_provider) }}"
+  when: dns_nodes | selectattr('ipaddr', 'defined') | length == 0
+
+- name: Include request IPs for nodes
+  when: "dns_nodes | selectattr('ipaddr', 'defined') | length == 0"
+  block:
+    - name: Merge IPs to our variables
+      ansible.builtin.set_fact:
+        dns_nodes: "{{ dns_nodes | machacekondra.openshift_install.merge_ips(__free_ips) }}"
+      vars:
+        __free_ips: "{{ lookup('infoblox.nios_modules.nios_next_ip', dns_network, num=dns_nodes | length, provider=dns_provider) }}"

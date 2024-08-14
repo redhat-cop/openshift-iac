@@ -1,0 +1,24 @@
+baremetal_network_type: "{{ openshift_install_network_type | d('OVNKubernetes') }}"
+baremetal_network: "{{ openshift_install_network | mandatory }}"
+baremetal_base_domain: "{{ openshift_install_base_domain | mandatory }}"
+baremetal_cluster_name: "{{ openshift_install_cluster_name | mandatory }}"
+baremetal_ssh_key: "{{ openshift_install_ssh_key | d('') }}"
+baremetal_nodes: "{{ openshift_install_nodes | mandatory }}"
+baremetal_dhcp: "{{ openshift_install_dhcp | d(true) }}"
+baremetal_pull_secret: "{{ openshift_install_pull_secret | mandatory | safe | from_json }}"
+baremetal_fips: "{{ openshift_install_fips | d(false) }}"
+
+baremetal_dns_servers: "{{ openshift_install_dns_servers }}"
+baremetal_interface_name: "{{ openshift_install_interface_name | d('eno3') }}"
+baremetal_cluster_home_dir_def: "{{ ansible_env.HOME }}/.{{ openshift_install_cluster_name }}"
+baremetal_cluster_home_dir: "{{ openshift_install_cluster_home_dir | d(baremetal_cluster_home_dir_def) }}"
+
+baremetal_binaries_dir: "{{ ansible_env.HOME }}/.{{ baremetal_cluster_name }}/bin"
+baremetal_install_binary: "{{ openshift_install_binary | d(baremetal_binaries_dir + '/openshift-install') }}"
+
+baremetal_api_vip: "{{ openshift_install_api_vip | mandatory }}"
+baremetal_ingress_vip: "{{ openshift_install_ingress_vip | mandatory }}"
+
+baremetal_bmc_password: "{{ openshift_install_bmc_password | d('') }}"
+baremetal_wait_for_install: "{{ openshift_install_wait_for_install | d(false) }}"
+baremetal_root_device_hints: "{{ openshift_install_root_device_hints | d('') }}"

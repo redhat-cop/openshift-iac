@@ -1,0 +1,20 @@
+- name: Create | Include registry
+  ansible.builtin.import_tasks: registry.yml
+  when: configure_registry
+  tags:
+    - registry
+
+- name: Create | Include SSH
+  ansible.builtin.import_tasks: ssh.yml
+  when: configure_ssh_key == ''
+
+- name: Create | Include vmware
+  ansible.builtin.import_tasks: setup_vmware.yml
+
+- name: Create | Include DHCP reservation
+  ansible.builtin.import_tasks: dhcp_reserve.yml
+
+- name: Create | Include install
+  ansible.builtin.import_tasks: install.yml
+  tags:
+    - poweron

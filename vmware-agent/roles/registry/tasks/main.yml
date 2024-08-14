@@ -1,0 +1,85 @@
+- name: Create a directory for the registry if one does not exist
+  ansible.builtin.file:
+    path: "{{ registry_directory }}/{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "auth"
+    - "certs"
+    - "data"
+
+- name: Generate certificate
+  ansible.builtin.import_tasks: request_certificate_vault.yml
+  when: registry_certificate_type == 'vault'
+
+- name: Create htpasswd file
+  community.general.htpasswd:
+    path: "{{ registry_directory }}/auth/htpasswd"
+    name: "{{ registry_username }}"
+    password: "{{ registry_password }}"
+    create: true
+    crypt_scheme: bcrypt
+
+- name: Remove mirror-registry Podman containers
+  containers.podman.podman_container:
+    name: "mirror-registry"
+    state: absent
+
+# TODO: Make it systemd service
+- name: Run mirror-registry container
+  containers.podman.podman_container:
+    name: mirror-registry
+    image: docker.io/library/registry:2
+    state: started
+    detach: true
+    ports:
+      - "{{ registry_port }}:5000"
+    volumes:
+      - "{{ registry_directory }}/data:/var/lib/registry:z"
+      - "{{ registry_directory }}/auth:/auth:z"
+      - "{{ registry_directory }}/certs:/certs:z"
+    env:
+      REGISTRY_AUTH: "htpasswd"
+      REGISTRY_AUTH_HTPASSWD_REALM: "Registry Realm"
+      REGISTRY_AUTH_HTPASSWD_PATH: "/auth/htpasswd"
+      REGISTRY_HTTP_TLS_CERTIFICATE: "/certs/domain.crt"
+      REGISTRY_HTTP_TLS_KEY: "/certs/domain.key"
+
+- name: Open up the required ports thru firewall
+  ansible.posix.firewalld:
+    port: "{{ item.port }}/tcp"
+    zone: "{{ item.zone }}"
+    state: enabled
+    permanent: true
+  loop:
+    - { port: "{{ registry_port }}", zone: "internal"}
+    - { port: "{{ registry_port }}", zone: "public"}
+  become: true
+
+- name: Register the new pull secret
+  ansible.builtin.set_fact:
+    __registry_pull_secret: "{{ registry_pull_secret | from_json | machacekondra.openshift_install.combine_pull_secret(__registry_host, __registry_credentials, registry_email) }}"
+  vars:
+    __registry_credentials: "{{ (registry_username ~ ':' ~ registry_password) | b64encode }}"
+    __registry_host: "{{ registry_host }}:{{ registry_port }}"
+
+- name: Add pull-secret to the temporary file
+  ansible.builtin.copy:
+    dest: "{{ registry_directory }}/.pull-secret"
+    content: "{{ __registry_pull_secret }}"
+  register: __pull_secret_file
+
+- name: Mirror the registry # noqa no-changed-when
+  ansible.builtin.command: >
+    "{{ registry_binaries_dir }}/oc" adm -a "{{ __pull_secret_file.dest }}" release mirror --insecure=true
+    --from=quay.io/{{ registry_product_repo }}/{{ registry_release }}:{{ registry_ocp_release }}
+    --to={{ registry_host }}:{{ registry_port }}/{{ registry_repo }}
+    --to-release-image={{ registry_host }}:{{ registry_port }}/{{ registry_repo }}:{{ registry_release }}
+
+- name: Extract openshift-install from registry # noqa no-changed-when
+  ansible.builtin.command: >
+    "{{ registry_binaries_dir }}/oc" adm -a "{{ __pull_secret_file.dest }}" --insecure=true
+    release extract
+    --command=openshift-install
+    --to={{ registry_binaries_dir }}
+    "{{ registry_host }}:{{ registry_port }}/{{ registry_repo }}:{{ registry_release }}"

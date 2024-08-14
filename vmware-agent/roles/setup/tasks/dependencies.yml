@@ -1,0 +1,19 @@
+- name: dependencies | Install the necessary linux packages which will be needed later in the ansible run
+  ansible.builtin.package:
+    name:
+      - nmstate
+      - podman
+      - gcc
+      - python3-hvac
+      - python3-passlib
+      - python3-pip
+      - python3-kubernetes
+      - python3-netaddr
+      - python3-aiohttp
+      - python3-devel
+  become: true
+
+- name: dependencies | Install the necessary pip packages which will be needed later in the ansible run
+  ansible.builtin.pip:
+    name:
+      - infoblox-client

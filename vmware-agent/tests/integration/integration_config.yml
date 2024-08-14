@@ -1,0 +1,64 @@
+openshift_install_api_vip: "1.2.3.10"
+openshift_install_ingress_vip: "1.2.3.11"
+openshift_install_dns_primary_grid: my
+openshift_install_wait_for_install: false
+openshift_install_cluster_name: "testcluster"
+openshift_install_base_domain: example.com
+openshift_install_network: "10.1.198.224/28"
+openshift_install_ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCXFFbh2G91SF6lxBYg68nniIwiK7ZdfuQFATYLqgPKrr1GPD0iV4CWPBlOs+Zev+0Bm8hqX3p7TtNOZuN1dOo7RvYUsIES1Grtkg7CY2rG4JLKDAPG5iAbda9piWdwgOpmLegQxgji90CGRqg9VUEI5UIC07UExYFoksZnzgLlX/n7tqOXLhIqV9Mz0/8LFh4yvpr39GbJSD+yAfjmiMsLOKczXioKyN27mqvuwrYjkpMzBpVjgh6sHdWzcylxK4iHJdlyhDYhe7FuIqj/+2qQDcxXhnAwJl3PnWiq2ZCEO61s1HkUfAvVqCulWR06AU95HLP3qh9gLnI7/pkc9D6Tm9dP90SLYpX3627XHjcZUChbESUtS8SaLp1R2FIEXxXGVG5CPWy6tivl8ReVEvCb3vNckhkbFnuYmmKesDRN014R9JUhHxp9hPuM2nQROSUc3ZtSxeAKOZTmQJXNd4YZfp/e1ODJmkH+1tDICde4ob/dIgEIZO5tGWyo/Lc+258= omachace@ondra"
+openshift_install_pull_secret: '{"auths":{"quay.io":{"auth":""}}}'
+openshift_install_ca_crt: |
+    -----BEGIN CERTIFICATE-----
+    MIIDTzCCAjegAwIBAgIUMaqhJ44uMY/BMGovm8PG6B7yziwwDQYJKoZIhvcNAQEL
+    BQAwHjEcMBoGA1UEAxMTZmxpZ2h0cGF0aC5pbnRlcm5hbDAeFw0yMzExMjAyMDAy
+    NTJaFw0zMzExMTcyMDAzMjFaMB4xHDAaBgNVBAMTE2ZsaWdodHBhdGguaW50ZXJu
+    YWwwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDAxKzTbXD5zQ/Q4ajE
+    sJ+B1Wp4Dgt8dZ7Jx3sJakX5sSkK6wxqy3lEj1NHgamTjlF5M/Mw+TxFMLFp+wTG
+    314kLhi/O89lMRyqsEbuDxkBYWS8uXRYAKlsR4oiZaYgFWKKk2oHNiGLvhy3RSfR
+    4gvlGQ/HjMh04IEfcbpBsjDOWpz8+tk6MFHpNIy5xmUclPLewmaC8uUi7scwXYG0
+    wA3+yBlXgeq6QZPB7nZmRAjAtPrUqj6TwWZM8W3cS87MMfy4rIiu7fYCYjHMyPaV
+    cczp4OH30yZPydsKcUcEy/BHSaSUul5tKHqaGVjVViHYIDVL+rOKMTWldCyZ7gu5
+    0X47AgMBAAGjgYQwgYEwDgYDVR0PAQH/BAQDAgEGMA8GA1UdEwEB/wQFMAMBAf8w
+    HQYDVR0OBBYEFHxtV+p//I104/zwhR62Hq9vEtuWMB8GA1UdIwQYMBaAFHxtV+p/
+    /I104/zwhR62Hq9vEtuWMB4GA1UdEQQXMBWCE2ZsaWdodHBhdGguaW50ZXJuYWww
+    DQYJKoZIhvcNAQELBQADggEBAJQph1SPsD47fdspdNMj4IXeDoWz8itrk+Vi631+
+    30JglYXyIp+Mlbt1qx033oIQWn0Q7OvbDx4w+73dk6Gnx51CqoLVGi1/5wHvSHlF
+    VAyf9jvJAHlAHQLeenw4M3Bn4NB+xE5VeAnkuXWvtANIZtjiQqx+ykN3J4Bz/0qy
+    c7uRH6cttKvXEYiQfTTmkquFWgCuWplG8DG/bEJPaTTsaWZjSYQkKJtcQfih+rI4
+    8Mdl8ipN37WMO2YK1Yg8FqTzpbhmHFXwEan4FTH9SG7pXa/cg/2rWwHDE0inYNAT
+    rOzAJOUD0iJHt3kVNn7gUzdRS8JXRHg+pXly9nnh+5ObTEY=
+    -----END CERTIFICATE-----
+openshift_install_nodes:
+  - name: "a"
+    ipaddr: "1.2.3.4"
+    macaddr: "00:11:22:33:44:55"
+    role: 'master'
+  - name: "b"
+    ipaddr: "1.2.3.5"
+    macaddr: "00:11:22:33:44:56"
+    role: 'master'
+  - name: "c"
+    ipaddr: "1.2.3.6"
+    macaddr: "00:11:22:33:44:57"
+    role: 'master'
+openshift_install_vcenter_datacenter: DC-Practice-Lab
+openshift_install_vcenter_cluster: '/DC-Practice-Lab/host/Practice-Lab-Cluster'
+openshift_install_vcenter_datastore: datastore1
+openshift_install_vcenter_network: "testnetwork"
+openshift_install_vcenter_folder: "/DC-Practice-Lab/vm/omachace"
+dns_provider:
+  host: "myservice:1080"
+  username: "x"
+  password: "password"
+  validate_certs: false
+configure_vsphere:
+  vcenter_hostname: "myservice:1080"
+  vcenter_username: "user"
+  vcenter_password: "pass"
+  vcenter_validate_certs: "false"
+load_balancer_provider:
+  server: "myservice"
+  server_port: 1080
+  user: "a"
+  password: "password"
+  validate_certs: "false"

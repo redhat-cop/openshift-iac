@@ -1,0 +1,13 @@
+- name: Delete VMs
+  vmware.vmware_rest.vcenter_vm:
+    state: "absent"
+    vcenter_password: "{{ configure_vsphere.vcenter_password }}"
+    vcenter_hostname: "{{ configure_vsphere.vcenter_hostname }}"
+    vcenter_username: "{{ configure_vsphere.vcenter_username }}"
+    vcenter_validate_certs: "{{ configure_vsphere.vcenter_validate_certs | d(false) }}"
+    placement:
+      cluster: "{{ lookup('vmware.vmware_rest.cluster_moid', '/{{ configure_datacenter }}/host/{{ configure_cluster }}', **configure_vsphere) }}"
+      datastore: "{{ lookup('vmware.vmware_rest.datastore_moid', '/{{ configure_datacenter }}/datastore/{{  configure_datastore }}', **configure_vsphere) }}"
+      folder: "{{ lookup('vmware.vmware_rest.folder_moid', '/{{ configure_datacenter }}/omachace', **configure_vsphere) }}"
+    name: "{{ configure_cluster_name }}-{{ item.role | default('master') }}-{{ item.name | mandatory }}"
+  loop: "{{ configure_nodes }}"

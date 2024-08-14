@@ -1,0 +1,32 @@
+- name: Gitops | Checkout repo
+  ansible.builtin.git:
+    repo: "{{ post_install_gitops_repo }}"
+    dest: "{{ post_install_gitops_repo_path }}"
+
+- name: Deploy Argo
+  kubernetes.core.k8s:
+    state: absent
+    kubeconfig: "{{ post_install_home_dir }}/auth/kubeconfig"
+    src: "{{ item }}"
+  loop:
+    - "{{ post_install_gitops_repo_path }}/.bootstrap/subscription.yaml"
+    - "{{ post_install_gitops_repo_path }}/.bootstrap/cluster-rolebinding.yaml"
+    - "{{ post_install_gitops_repo_path }}/.bootstrap/argocd.yaml"
+
+- name: Get root app definition
+  ansible.builtin.fetch:
+    src: "{{ post_install_gitops_repo_path }}/.bootstrap/root-application.yaml"
+    dest: "/tmp/root-application.yaml"
+    flat: true
+
+- name: Deploy root Argo app
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: "{{ post_install_home_dir }}/auth/kubeconfig"
+    template:
+      - path: "/tmp/root-application.yaml"
+        variable_start_string: "${"
+        variable_end_string: "}"
+  vars:
+    cluster_name: "${post_install_gitops_cluster_name}"
+    gitops_repo: "${post_install_gitops_repo}"

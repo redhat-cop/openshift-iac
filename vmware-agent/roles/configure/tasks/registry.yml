@@ -1,0 +1,24 @@
+- name: Registry | Load certificate
+  when: configure_registry_cert == ''
+  block:
+    - name: Registry | Load registry certificate
+      ansible.builtin.slurp:
+        src: "{{ configure_registry_directory }}/certs/ca.crt"
+      register: __domain_crt
+
+    - name: Registry | Set registry certificate
+      ansible.builtin.set_fact:
+        configure_registry_cert: "{{ __domain_crt.content | b64decode }}"
+
+- name: Registry | Register the new pull secret
+  ansible.builtin.set_fact:
+    configure_pull_secret: >
+      "{{ configure_pull_secret |
+      machacekondra.openshift_install.combine_pull_secret(
+        __registry_host,
+        __registry_credentials,
+        configure_registry_email
+      ) }}"
+  vars:
+    __registry_credentials: "{{ (configure_registry_username ~ ':' ~ configure_registry_password) | b64encode }}"
+    __registry_host: "{{ configure_registry_host }}:{{ configure_registry_port }}"

@@ -1,0 +1,8 @@
+- name: Clean | Remove a zone for cluster
+  infoblox.nios_modules.nios_zone:
+    name: "{{ dns_zone }}"
+    grid_primary:
+      - name: "{{ dns_primary_grid }}"
+    restart_if_needed: true
+    state: "absent"
+    provider: "{{ dns_provider }}"

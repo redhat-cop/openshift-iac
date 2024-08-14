@@ -1,0 +1,26 @@
+- name: Deploy the Openshift
+  hosts: "{{ openshift_install_target_host | d('localhost') }}"
+  gather_facts: true
+  roles:
+    - role: setup
+      tags:
+        - setup
+    - role: registry
+      tags:
+        - registry
+      when: openshift_install_registry | d(false)
+    - role: dns
+      tags:
+        - dns
+        - infra
+    - role: load_balancer
+      tags:
+        - load_balancer
+        - infra
+    - role: configure
+      tags:
+        - install
+    - role: post_install
+      tags:
+        - post_install
+      when: openshift_install_post_install | d(false)

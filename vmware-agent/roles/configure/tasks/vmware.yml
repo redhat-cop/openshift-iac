@@ -1,0 +1,132 @@
+- name: Setup | Create master VMs
+  vmware.vmware_rest.vcenter_vm:
+    vcenter_password: "{{ configure_vsphere.vcenter_password }}"
+    vcenter_hostname: "{{ configure_vsphere.vcenter_hostname }}"
+    vcenter_username: "{{ configure_vsphere.vcenter_username }}"
+    vcenter_validate_certs: "{{ configure_vsphere.vcenter_validate_certs | d(false) }}"
+    placement:
+      cluster: "{{ lookup('vmware.vmware_rest.cluster_moid', '/{{ configure_datacenter }}/host/{{ configure_cluster }}', **configure_vsphere) }}"
+      datastore: "{{ lookup('vmware.vmware_rest.datastore_moid', '/{{ configure_datacenter }}/datastore/{{  configure_datastore }}', **configure_vsphere) }}"
+      folder: "{{ lookup('vmware.vmware_rest.folder_moid', '/{{ configure_datacenter }}/omachace', **configure_vsphere) }}"
+    name: "{{ configure_cluster_name }}-{{ item.role | default('master') }}-{{ item.name | mandatory }}"
+    guest_OS: RHEL_8_64
+    hardware_version: "{{ configure_hardware_version }}"
+    memory:
+      hot_add_enabled: true
+      size_MiB: "{{ configure_master_mib }}"
+    cpu:
+      count: "{{ configure_master_cpu_count }}"
+      cores_per_socket: "{{ configure_master_cpu_cps }}"
+    disks:
+      - type: SATA
+        new_vmdk:
+          name: "{{ item.name }}_disk1"
+          capacity: 120000000000
+    cdroms:
+      - type: SATA
+        start_connected: true
+        backing:
+          type: ISO_FILE
+          iso_file: "[{{ configure_datastore }}] ISO/{{ configure_cluster_name }}-boot-iso.iso"
+        sata:
+          bus: 0
+          unit: 2
+    nics:
+      - mac_type: "{{ 'MANUAL' if item.macaddr is defined else 'GENERATED' }}"
+        start_connected: true
+        mac_address: "{{ item.macaddr | default(omit) }}"
+        backing:
+          type: DISTRIBUTED_PORTGROUP
+          network: "{{ lookup('vmware.vmware_rest.network_moid', '/{{ configure_datacenter }}/network/{{ configure_network_name }}', **configure_vsphere) }}"
+      #############################################################
+      # Remove - workround for vcenter is on different network
+      #############################################################
+      - mac_type: GENERATED
+        start_connected: true
+        backing:
+          type: DISTRIBUTED_PORTGROUP
+          network: "{{ lookup('vmware.vmware_rest.network_moid', '/{{ configure_datacenter }}/network/vlan-202 - DPortGroup', **configure_vsphere) }}"
+      #############################################################
+  loop: "{{ configure_nodes }}"
+
+- name: Setup | Fetch VMs MAC addresses
+  ansible.builtin.set_fact:
+    configure_nodes: "{{ configure_nodes | machacekondra.openshift_install.fetch_macaddrs(cl_name=configure_cluster_name, **configure_vsphere) }}"
+  when: configure_nodes | selectattr('macaddr', 'defined') | length == 0
+  tags:
+    - install-config
+
+- name: Setup | Fetch VMs IP addresses
+  ansible.builtin.set_fact:
+    configure_nodes: "{{ configure_nodes | machacekondra.openshift_install.fetch_ips(configure_cluster_name, configure_base_domain, provider=configure_dns_provider) }}"
+  when: configure_nodes | selectattr('ipaddr', 'defined') | length == 0
+  tags:
+    - install-config
+
+################################################################################################################################################################################
+- name: Setup | Ensure the cluster folder exists
+  ansible.builtin.file:
+    path: "{{ configure_cluster_home_dir }}"
+    state: directory
+  tags:
+    - install-config
+
+- name: Setup | Ensure the openshift folder exists
+  ansible.builtin.file:
+    path: "{{ configure_cluster_home_dir }}/openshift"
+    state: directory
+
+- name: Setup | Generate install-config.yaml
+  ansible.builtin.template:
+    src: install-config.yaml.j2
+    dest: "{{ configure_cluster_home_dir }}/install-config.yaml"
+    mode: "0644"
+  vars:
+    __master_nodes_len: "{{ openshift_install_nodes | machacekondra.openshift_install.master_nodes_len }}"
+    __worker_nodes_len: "{{ openshift_install_nodes | machacekondra.openshift_install.worker_nodes_len }}"
+  tags:
+    - install-config
+
+- name: Setup | Generate agent-config.yaml
+  ansible.builtin.template:
+    src: agent-config.yaml.j2
+    dest: "{{ configure_cluster_home_dir }}/agent-config.yaml"
+    mode: "0644"
+  vars:
+    __network_prefix: "{{ configure_network | ansible.utils.ipaddr('prefix') }}"
+  tags:
+    - install-config
+
+- name: Setup | Check if ISO already exists
+  ansible.builtin.stat:
+    name: "{{ configure_cluster_home_dir }}/agent.x86_64.iso"
+  register: iso_file
+  tags:
+    - create-iso
+
+## Remove when working openshift-install is available
+- name: Setup | Include workaround for AGENT-626
+  ansible.builtin.import_tasks: workaround_AGENT-626.yml
+  tags:
+    - cluster-manifests
+
+- name: Setup | Create ISO image
+  ansible.builtin.command: "{{ configure_install_binary }} agent create image --dir={{ configure_cluster_home_dir }}"
+  when: not iso_file.stat.exists
+  changed_when: false
+  tags:
+    - create-iso
+
+## FIXME: no community modules
+- name: Setup | Copy ISO file to datastore
+  community.vmware.vsphere_copy:
+    hostname: "{{ configure_vsphere.vcenter_hostname }}"
+    username: "{{ configure_vsphere.vcenter_username }}"
+    password: "{{ configure_vsphere.vcenter_password }}"
+    validate_certs: "{{ configure_vsphere.validate_certs | d(false) }}"
+    src: "{{ configure_cluster_home_dir }}/agent.x86_64.iso"
+    datacenter: "{{ configure_datacenter }}"
+    datastore: "{{ configure_datastore }}"
+    path: "ISO/{{ configure_cluster_name }}-boot-iso.iso"
+  tags:
+    - upload-iso

@@ -1,0 +1,18 @@
+---
+argument_specs:
+  main:
+    short_description: The main entry point for the configure role.
+    options:
+      configure_default_route:
+        type: "str"
+        required: true
+        description: "Default route for the network interface."
+
+  alternate:
+    short_description: The alternate entry point for the configure role.
+    options:
+      myapp_int:
+        type: "int"
+        required: false
+        default: 1024
+        description: "The integer value, defaulting to 1024."

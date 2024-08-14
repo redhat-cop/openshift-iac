@@ -1,0 +1,65 @@
+- name: Certificate | Generate a certificate with an existing token
+  community.hashi_vault.vault_pki_generate_certificate:
+    role_name: "{{ post_install_vault_role_name }}"
+    common_name: "*.apps.{{ post_install_cluster_name }}.{{ post_install_base_domain }}"
+    ttl: "{{ post_install_certificate_ttl }}"
+    url: "{{ post_install_vault_url }}"
+    auth_method: token
+    token: "{{ post_install_vault_token }}"
+    validate_certs: false
+  register: __cert_data
+
+- name: Certificate | Create custom CA ConfigMap
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: "{{ post_install_home_dir }}/auth/kubeconfig"
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: custom-ca
+        namespace: openshift-config
+      data:
+        ca-bundle.crt: "{{ __cert_data.data.data.issuing_ca }}"
+
+- name: Certificate | Patch proxy config
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: "{{ post_install_home_dir }}/auth/kubeconfig"
+    definition:
+      apiVersion: config.openshift.io/v1
+      kind: Proxy
+      metadata:
+        name: cluster
+      spec:
+        trustedCA:
+          name: "custom-ca"
+
+- name: Certificate | Create secret
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: "{{ post_install_home_dir }}/auth/kubeconfig"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      type: kubernetes.io/tls
+      metadata:
+        name: tls
+        namespace: openshift-ingress
+      data:
+        tls.crt: "{{ (__cert_data.data.data.certificate + '\n') | b64encode }}"
+        tls.key: "{{ (__cert_data.data.data.private_key + '\n') | b64encode }}"
+
+- name: Certificate | Patch IngressController
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: "{{ post_install_home_dir }}/auth/kubeconfig"
+    definition:
+      apiVersion: operator.openshift.io/v1
+      kind: IngressController
+      metadata:
+        name: default
+        namespace: openshift-ingress-operator
+      spec:
+        defaultCertificate:
+          name: "tls"

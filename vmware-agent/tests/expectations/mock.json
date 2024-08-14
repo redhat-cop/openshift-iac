@@ -1,0 +1,284 @@
+[
+{
+  "httpRequest": {
+    "method": "POST",
+    "path": "/rest/com/vmware/cis/session"
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": {"value": "72300ca9ff16c5743fa0a6328c8570ce"}
+  }
+},
+{
+  "httpRequest": {
+    "method": "GET",
+    "path": "/api/vcenter/folder",
+    "queryStringParameters": {"names": ["DC-Practice-Lab", "host"]}
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": [{"folder": "group-h5", "name": "host", "type": "HOST"}]
+  }
+},
+{
+  "httpRequest": {
+    "method": "GET",
+    "path": "/api/vcenter/folder",
+    "queryStringParameters": {"names": ["Practice-Lab-Cluster", "host"]}
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": [{"folder": "group-h5", "name": "host", "type": "HOST"}]
+  }
+},
+{
+  "httpRequest": {
+    "method": "GET",
+    "path": "/api/vcenter/folder",
+    "queryStringParameters": {"names": ["datastore1", "datastore"],"type": "DATASTORE"}
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": [{"folder": "group-s6", "name": "datastore", "type": "DATASTORE"}]
+  }
+},
+{
+  "httpRequest": {
+    "method": "GET",
+    "path": "/api/vcenter/folder",
+    "queryStringParameters": {"names": ["omachace"]}
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": [{"folder":"group-v64","name":"omachace","type":"VIRTUAL_MACHINE"},{"folder":"group-v65","name":"omachace","type":"VIRTUAL_MACHINE"}]
+  }
+},
+{
+  "httpRequest": {
+    "method": "GET",
+    "path": "/api/vcenter/folder",
+    "queryStringParameters": {"type": "NETWORK"}
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": [{"folder":"group-n7","name":"network","type":"NETWORK"}]
+  }
+},
+{
+  "httpRequest": {
+    "method": "GET",
+    "path": "/api/vcenter/datacenter"
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": [{"name": "DC-Practice-Lab", "datacenter": "datacenter-3"}]
+  }
+},
+{
+  "httpRequest": {
+    "method": "GET",
+    "path": "/api/vcenter/cluster"
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": [{"drs_enabled": true, "cluster": "domain-c8", "name": "Practice-Lab-Cluster","ha_enabled": true}]
+  }
+},
+{
+  "httpRequest": {
+    "method" : "GET",
+    "path" : "/api/vcenter/datastore",
+    "queryStringParameters" : {"names" : [ "datastore1" ], "folders" : [ "group-s6" ], "datacenters" : [ "datacenter-3" ]}
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": [{"datastore":"datastore-22","name":"datastore1","type":"VMFS","free_space":654878703616,"capacity":661156528128}]
+  }
+},
+{
+  "httpRequest": {
+    "method" : "GET",
+    "path" : "/api/vcenter/network"
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": [{"name":"testnetwork","type":"DISTRIBUTED_PORTGROUP","network":"dvportgroup-52"}]
+  }
+},
+{
+  "httpRequest": {
+    "method" : "GET",
+    "path" : "/api/vcenter/vm"
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": [{"memory_size_MiB":8192,"vm":"vm-1009","name":"myvm","power_state":"POWERED_ON","cpu_count":2}]
+  }
+},
+{
+  "httpRequest": {
+    "method" : "GET",
+    "path" : "/api/vcenter/vm/vm-[0-9]+/hardware/ethernet/"
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": [{"nic":"4000"}]
+  }
+},
+{
+  "httpRequest": {
+    "method" : "GET",
+    "path" : "/api/vcenter/vm/vm-[0-9]+/hardware/ethernet/[0-9]+"
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": {"nic":"4000","mac_address": "00:11:22:33:44:55"}
+  }
+},
+{
+  "httpRequest": {
+    "method" : "POST",
+    "path" : "/api/vcenter/vm"
+  },
+  "httpResponse": {
+    "statusCode": 201,
+    "body": {"memory_size_MiB":8192,"vm":"vm-1010","name":"myvm","power_state":"POWERED_ON","cpu_count":2,"value": "{}"},
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+},
+{
+  "httpRequest": {
+    "method" : "POST",
+    "path" : "/api/vcenter/vm/vm-[0-9]+/power"
+  },
+  "httpResponse": {
+    "statusCode": 201,
+    "body": {},
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+},
+{
+  "httpRequest": {
+    "method" : "PUT",
+    "path" : "/folder/ISO/.*"
+  },
+  "httpResponse": {
+    "statusCode": 201,
+    "body": {},
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+},
+{
+  "httpRequest": {
+    "method": "GET",
+    "path": "/mgmt/tm/sys[/]*",
+    "secure": true
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": {"kind": "tm:sys:syscollectionstate","selfLink": "https://localhost/mgmt/tm/sys?ver=17.1.0","items":[{"reference": {"link": "https://localhost/mgmt/tm/sys/application?ver=17.1.0"}}]}
+  }
+},
+{
+  "httpRequest": {
+    "method": "GET",
+    "path": "/mgmt/tm/sys/provision",
+    "secure": true
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": {}
+  }
+},
+{
+  "httpRequest": {
+    "method": "GET|POST|PATCH",
+    "path": "/mgmt/tm/ltm/monitor/.*",
+    "secure": true
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": {}
+  }
+},
+{
+  "httpRequest": {
+    "method": "GET|POST|PATCH",
+    "path": "/mgmt/tm/ltm/pool/.*",
+    "secure": true
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": {}
+  }
+},
+{
+  "httpRequest": {
+    "method": "GET|POST|PATCH",
+    "path": "/mgmt/tm/ltm/virtual/.*",
+    "secure": true
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": {"sourceAddressTranslation":{"type":"automap"},"profilesReference":{"link": "","isSubcollection": true}}
+  }
+},
+{
+  "httpRequest": {
+    "method": "GET",
+    "path": "/mgmt/tm/ltm/profile/.*",
+    "secure": true
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": {"items": [{"name": "fake"}]}
+  }
+},
+{
+  "httpRequest": {
+    "method": "GET",
+    "path": "/mgmt/tm/net/tunnels/.*",
+    "secure": true
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": {"items": [{"fullPath": "fake"}]}
+  }
+},
+{
+  "httpRequest": {
+    "method": "GET|POST|PUT",
+    "path": "/wapi/v2.9/zone_auth.*"
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": [{"_ref": "zone_auth/X"}]
+  }
+},
+{
+  "httpRequest": {
+    "method": "GET",
+    "path": "/wapi/v2.9/record.*"
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": {}
+  }
+},
+{
+  "httpRequest": {
+    "method": "POST",
+    "path": "/wapi/v2.9/record.*"
+  },
+  "httpResponse": {
+    "statusCode": 201,
+    "body": {"name": "foo.flightpath.foo"}
+  }
+}
+]

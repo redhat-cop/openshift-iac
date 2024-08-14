@@ -1,0 +1,48 @@
+- name: Clean | Remove master virtual server
+  f5networks.f5_modules.bigip_virtual_server:
+    state: "absent"
+    name: "{{ load_balancer_cluster_name }}-frontend-openshift-api-server"
+    provider: "{{ load_balancer_provider }}"
+
+- name: Clean | Remove worker virtual server
+  f5networks.f5_modules.bigip_virtual_server:
+    state: "absent"
+    name: "{{ load_balancer_cluster_name }}-frontend-openshift-router"
+    provider: "{{ load_balancer_provider }}"
+
+- name: Clean | Remove mc virtual server
+  f5networks.f5_modules.bigip_virtual_server:
+    state: "absent"
+    name: "{{ load_balancer_cluster_name }}-frontend-machine-config-server"
+    provider: "{{ load_balancer_provider }}"
+
+- name: Clean | Remove backend-openshift-api-server
+  f5networks.f5_modules.bigip_pool:
+    state: "absent"
+    name: "{{ load_balancer_cluster_name }}-backend-openshift-api-server"
+    provider: "{{ load_balancer_provider }}"
+
+- name: Clean | Remove backend-machine-config-server
+  f5networks.f5_modules.bigip_pool:
+    state: "absent"
+    name: "{{ load_balancer_cluster_name }}-backend-machine-config-server"
+    provider: "{{ load_balancer_provider }}"
+
+- name: Clean | Remove backend-openshift-router
+  f5networks.f5_modules.bigip_pool:
+    state: "absent"
+    name: "{{ load_balancer_cluster_name }}-backend-openshift-router"
+    provider: "{{ load_balancer_provider }}"
+
+- name: Clean | Remove nodes of backend-machine-config-server
+  f5networks.f5_modules.bigip_node:
+    state: "absent"
+    name: "{{ item.name }}-{{ load_balancer_cluster_name }}"
+    provider: "{{ load_balancer_provider }}"
+  loop: "{{ load_balancer_nodes }}"
+
+- name: Clean | Remove monitor
+  f5networks.f5_modules.bigip_monitor_https:
+    name: "backend-openshift-api-monitor"
+    state: "absent"
+    provider: "{{ load_balancer_provider }}"

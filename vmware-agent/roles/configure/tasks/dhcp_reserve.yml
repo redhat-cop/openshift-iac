@@ -1,0 +1,16 @@
+- name: DHCP reserve | Configure fixed address
+  when: "configure_dhcp and configure_dhcp_reservation"
+  block:
+    - name: DHCP reserve | Configure an ipv4 dhcp fixed address
+      infoblox.nios_modules.nios_fixed_address:
+        name: "{{ item.name }}.{{ dns_zone }}"
+        mac: "{{ item.macaddr }}"
+        network: "{{ configure_network }}"
+        ipaddr: "{{ item.ipaddr }}"
+        state: present
+        provider: "{{ configure_dns_provider }}"
+      loop: "{{ configure_nodes }}"
+
+    - name: DHCP reserve | Restart all grid services if needed.
+      infoblox.nios_modules.nios_restartservices:
+        provider: "{{ configure_dns_provider }}"

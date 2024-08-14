@@ -1,0 +1,28 @@
+- name: Vault | Generate a certificate with an existing token
+  community.hashi_vault.vault_pki_generate_certificate:
+    role_name: "{{ registry_vault_role_name }}"
+    common_name: "{{ registry_host }}"
+    ttl: "{{ registry_certificate_ttl }}"
+    url: "{{ registry_vault_url }}"
+    auth_method: token
+    token: "{{ registry_vault_token }}"
+    validate_certs: false
+    alt_names:
+      - "{{ registry_host }}"
+      - "{{ registry_host.split('.')[0] }}"
+  register: __cert_data
+
+- name: Vault | Write a certificate
+  ansible.builtin.copy:
+    content: "{{ __cert_data.data.data.certificate }}"
+    dest: "{{ registry_directory }}/certs/domain.crt"
+
+- name: Vault | Write a certificate key
+  ansible.builtin.copy:
+    content: "{{ __cert_data.data.data.private_key }}"
+    dest: "{{ registry_directory }}/certs/domain.key"
+
+- name: Vault | Write a ca cert
+  ansible.builtin.copy:
+    content: "{{ __cert_data.data.data.issuing_ca }}"
+    dest: "{{ registry_directory }}/certs/ca.crt"

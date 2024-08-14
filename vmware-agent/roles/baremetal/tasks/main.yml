@@ -1,0 +1,71 @@
+- name: Baremetal | Ensure the cluster folder exists
+  ansible.builtin.file:
+    path: "{{ baremetal_cluster_home_dir }}"
+    state: directory
+
+- name: Baremetal | Ensure the openshift folder exists
+  ansible.builtin.file:
+    path: "{{ baremetal_cluster_home_dir }}/openshift"
+    state: directory
+
+- name: Baremetal | Generate install-config.yaml
+  ansible.builtin.template:
+    src: install-config.yaml.j2
+    dest: "{{ baremetal_cluster_home_dir }}/install-config.yaml"
+    mode: "0644"
+  vars:
+    __master_nodes_len: "{{ openshift_install_nodes | machacekondra.openshift_install.master_nodes_len }}"
+    __worker_nodes_len: "{{ openshift_install_nodes | machacekondra.openshift_install.worker_nodes_len }}"
+
+- name: Baremetal | Generate agent-config.yaml
+  ansible.builtin.template:
+    src: agent-config.yaml.j2
+    dest: "{{ baremetal_cluster_home_dir }}/agent-config.yaml"
+    mode: "0644"
+  vars:
+    # __network_prefix: "{{ baremetal_network | ansible.utils.ipaddr('prefix') }}"
+    __network_prefix: "24"
+
+- name: Baremetal | Check if ISO already exists
+  ansible.builtin.stat:
+    name: "{{ baremetal_cluster_home_dir }}/agent.x86_64.iso"
+  register: iso_file
+
+- name: Baremetal | Create ISO image
+  ansible.builtin.command: "{{ baremetal_install_binary }} agent create image --dir={{ baremetal_cluster_home_dir }}"
+  when: not iso_file.stat.exists
+  changed_when: not iso_file.stat.exists
+
+# Seems like there is no way to share single ISO between more hosts in iDRAC
+- name: Baremetal | Copy ISOs
+  ansible.builtin.copy:
+    src: "{{ baremetal_cluster_home_dir }}/agent.x86_64.iso"
+    dest: "{{ baremetal_cluster_home_dir }}/agent.{{ item }}.x86_64.iso"
+    remote_src: true
+  loop:
+    - 0
+    - 1
+    - 2
+
+- name: Baremetal | Publish ISO on http server
+  containers.podman.podman_container:
+    name: myhttp
+    image: httpd:2.4
+    recreate: true
+    expose:
+      - 8080
+    publish:
+      - 8080:80
+    volumes:
+      - "{{ baremetal_cluster_home_dir }}:/usr/local/apache2/htdocs/:Z"
+
+- name: Baremetal | Boot ISOs
+  ansible.builtin.include_tasks: "boot_iso.yml"
+  loop: "{{ openshift_install_nodes }}"
+  loop_control:
+    index_var: idx
+
+- name: Baremetal | Wait for install
+  ansible.builtin.command: "{{ baremetal_install_binary }} agent wait-for install-complete --dir={{ baremetal_cluster_home_dir }}"
+  changed_when: false
+  when: baremetal_wait_for_install

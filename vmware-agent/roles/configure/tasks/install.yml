@@ -1,0 +1,14 @@
+- name: Install | Power on the VM
+  vmware.vmware_rest.vcenter_vm_power:
+    vcenter_password: "{{ configure_vsphere.vcenter_password }}"
+    vcenter_hostname: "{{ configure_vsphere.vcenter_hostname }}"
+    vcenter_username: "{{ configure_vsphere.vcenter_username }}"
+    vcenter_validate_certs: "{{ configure_vsphere.vcenter_validate_certs }}"
+    state: start
+    vm: "{{ item }}"
+  loop: "{{ configure_nodes | machacekondra.openshift_install.vm_ids(configure_cluster_name, **configure_vsphere) }}"
+
+- name: Install | Wait for install
+  ansible.builtin.command: "{{ configure_install_binary }} agent wait-for install-complete --dir={{ configure_cluster_home_dir }}"
+  changed_when: false
+  when: configure_wait_for_install

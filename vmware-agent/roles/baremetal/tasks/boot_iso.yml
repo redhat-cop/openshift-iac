@@ -1,0 +1,28 @@
+- name: Baremetal | Insert Virtual Media
+  community.general.redfish_command:
+    category: Manager
+    command: VirtualMediaInsert
+    baseuri: "{{ item.bmc_address }}"
+    username: "{{ item.bmc_username }}"
+    password: "{{ item.bmc_password | d(baremetal_bmc_password) }}"
+    virtual_media:
+      image_url: 'http://{{ ansible_host }}:8080/agent.{{ idx }}.x86_64.iso'
+      media_types:
+        - CD
+
+- name: Baremetal | Set Next One-Time Boot to CD/DVD
+  community.general.redfish_command:
+    category: Systems
+    command: SetOneTimeBoot
+    baseuri: "{{ item.bmc_address }}"
+    username: "{{ item.bmc_username }}"
+    password: "{{ item.bmc_password | d(baremetal_bmc_password) }}"
+    bootdevice: Cd
+
+- name: Baremetal | Reboot the system
+  community.general.redfish_command:
+    category: Systems
+    command: PowerReboot
+    baseuri: "{{ item.bmc_address }}"
+    username: "{{ item.bmc_username }}"
+    password: "{{ item.bmc_password | d(baremetal_bmc_password) }}"

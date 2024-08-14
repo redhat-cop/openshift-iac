@@ -1,0 +1,6 @@
+load_balancer_nodes: "{{ openshift_install_nodes | mandatory  }}"
+load_balancer_cluster_name: "{{ openshift_install_cluster_name | mandatory }}"
+load_balancer_api_vip: "{{ openshift_install_api_vip | mandatory }}"
+load_balancer_ingress_vip: "{{ openshift_install_ingress_vip | mandatory }}"
+load_balancer_provider: "{{ openshift_install_lb | mandatory }}"
+load_balancer_state: "{{ openshift_install_lb_state | d('present') }}"
